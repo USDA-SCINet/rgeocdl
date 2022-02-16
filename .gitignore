@@ -1,0 +1,6 @@
+
+# Mac storage
+.DS_Store
+
+# R user files
+.Rproj.user/*
