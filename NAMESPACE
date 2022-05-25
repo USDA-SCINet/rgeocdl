@@ -2,4 +2,5 @@
 
 export(download_subset)
 export(list_datasets)
+export(upload_geometry)
 export(view_metadata)
