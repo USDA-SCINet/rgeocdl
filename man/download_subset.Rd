@@ -6,36 +6,60 @@
 \usage{
 download_subset(
   ds,
-  vars,
-  date_start = NULL,
-  date_end = NULL,
+  vars = NULL,
+  dates = NULL,
+  years = NULL,
+  months = NULL,
+  days = NULL,
   t_crs = NULL,
-  t_geom = NULL
+  resolution = NULL,
+  t_geom = NULL,
+  out_format = NULL,
+  grain_method = "strict",
+  validate_method = "strict",
+  ri_method = "nearest"
 )
 }
 \arguments{
-\item{ds}{The GeoCDL dataset ID.}
+\item{ds}{The GeoCDL dataset ID(s) as a vector}
 
 \item{vars}{A vector of variables from 'ds' to include, as available from
 \code{\link{view_metadata}}.}
 
-\item{date_start}{The start date of desired data. Use format 'YYYY'
-for annual, 'YYYY-MM' for monthly, and 'YYYY-MM-DD' for daily data.
-If NULL, returns entire temporal range.}
-
-\item{date_end}{The end date of desired data. Use format 'YYYY'
+\item{dates}{The start date of desired data. Use format 'YYYY'
 for annual, 'YYYY-MM' for monthly, and 'YYYY-MM-DD' for daily data.
 If NULL, returns entire temporal range.}
 
 \item{t_crs}{The target CRS specified as an EPSG code. If not specified,
 the CRS of the dataset will be used.}
 
-\item{t_geom}{The area of interest specified as upper left and
-lower right corners: c(c(xmin,ymax),(xmax,ymin)).These coordinates
-are in `t_crs` if specified or the CRS of the first dataset.}
+\item{t_geom}{The geometry of interest specified as a geometry upload ID
+(see \code{\link{upload_geometry}}) or a list of...}
+
+\item{out_format}{The output format for the subset. For area requests:
+'geotiff' or 'netcdf'. For point requests: 'csv', 'shapefile', or 'netcdf'.}
+
+\item{grain_method}{How to handle scenario of requested date grains not
+matching date grains of each requested dataset. If "strict" (default),
+ an error will be returned. If "skip", the dataset will be skipped.
+ If "coarser", then only coarser grains will be returned. If "finer",
+ then only finer grains will be returned. If "any", then any available
+ grain will be returned, with coarser having higher priority over finer.
+ Non-temporal datasets are always returned.}
+
+\item{validate_method}{How to handle requested dates outside of requested dataset
+available data range. If "strict" (default),
+an error will be returned. If "overlap", the requested dates will be
+'truncated to the date range available in all requested datasets. If
+"all", then the requested dates will be truncated to the available date
+range per dataset. Non-temporal datasets are always returned.}
+
+\item{ri_method}{The interpolation method used for extracting point
+values. Available methods: "nearest" or "linear". Default is
+"nearest".}
 }
 \value{
-A vector of paths to the downloade data.
+A vector of paths to the downloaded data.
 }
 \description{
 This function queries the GeoCDL REST API and returns
@@ -45,10 +69,11 @@ spatio-temporal filters.
 \examples{
 \dontrun{
 # Monthly PRISM precipitation from 2020 and in box of latlon coordinates
-download_subset('PRISM','ppt','2020-01','2020-12',"4326",list(c(-109,37),c(-103,31)))
+download_subset('PRISM','ppt','2020-01:2020-12',"EPSG:4326",list(c(-109,37),c(-103,31)))
 }
 
 }
 \seealso{
 \code{\link{list_datasets}} to list available datasets and their IDs.
+\code{\link{upload_geometry}} to obtain a geometry upload ID.
 }

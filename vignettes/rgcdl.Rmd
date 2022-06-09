@@ -1,0 +1,147 @@
+---
+title: "R package for USDA-ARS SCINet GeoCDL"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Overview
+
+This tutorial covers the R package `rgeocdl` for the SCINet Geospatial Common Data Library (GeoCDL), a community project from the [Geospatial Research Working Group](https://scinet.usda.gov/working-groups/geospatial) to reduce the time and effort to access commonly used geospatial datasets. 
+
+This vignette covers the pilot features implemented in the GeoCDL web API v0.1.0. The tutorial assumes you are either on CERES or a local machine connected to the [SCINet VPN](https://scinet.usda.gov/guide/vpn). For more details on the development of the web API, see [https://github.com/USDA-SCINet/geocdl/](https://github.com/USDA-SCINet/geocdl/) (request access from brian.stucky@usda.gov).
+
+## Tutorial Steps
+
+* Specify desired data - Define the spatio-temporal scope of the user request:
+  * Dataset and variables
+  * Temporal coverage and resolution
+  * Spatial coverage, spatial resolution, and CRS
+* Download requested data - Send request to server and download compressed folder with results
+* Visualize results - View the downloaded data and metadata
+
+## Step 0: Import Libraries/Packages
+
+```{r libraries, message=FALSE, warning=FALSE}
+library(rgeocdl)    # This package
+
+library(httr)       # Access geometry from AgCROS
+library(sf)         # Handle vector data
+library(raster)     # Handle raster data
+library(tidyverse)  # General data manipulation
+library(ggthemes)   # Visualization
+```
+
+## Step 1: Specify area and dates of interest 
+
+We will focus on the USDA-ARS Jornada Experimental Range in southern New Mexico. We will showcase returning both gridded data overlapping the site and point data at experiment locations within it. To specify these areas, we will use a shapefile of the site boundary and a shapefile of experiment locations. These shapefiles are in UTM 13N CRS. 
+
+We will also specify a target spatial resolution we want
+
+
+```{r space, warning=FALSE, fig.height = 6, fig.width = 6, fig.align = "center"}
+# Read in Jornada boundary shapefile and upload to GeoCDL
+# AgCROS 
+jer_bounds_sf <- GET(paste0('https://services1.arcgis.com/SyUSN23vOoYdfLC8/arcgis/rest/services/',
+                            'ltar_legacy_site_bndy_a/FeatureServer/1/query?',
+                            "where=State='NM'&f=pgeojson"))  %>%
+  st_read(quiet=TRUE) %>%
+  st_transform(32613) # EPSG code for UTM 13N with WGS84 datum
+
+# View shape
+ggplot() +
+  geom_sf(data=jer_bounds_sf)
+
+# Upload to GeoCDL and get Geometry Upload ID
+guid_bounds <- upload_geometry(jer_bounds_sf)
+
+# Spatial resolution - in meters since that is the unit of this CRS
+spat_res <- 1000 # meters
+resample_method <- 'bilinear'
+```
+
+For this example, we will request data from the Apr-Sep growing seasons in 2000-2010. The GeoCDL accepts date definitions by providing either: 1) a start and end date or 2) ranges of years and months or days. The first method is helpful when the user wants all data within a simple range of time and the desired temporal resolution can be dictated by the format of the dates: 'YYYY' for annual, 'YYYY-MM' for monthly, and 'YYYY-MM-DD' for daily data. The second method is more flexible and is better suited for our growing season example: we can specify our year range as '2000-2010' and our month range as '4-9'. By specifying months, we are telling the GeoCDL we are interested in monthly data so it will know to access the monthly PRISM files on Ceres as opposed to the daily or annual files. However, the MODIS NDVI product has data every 8 days (*confirm*). The GeoCDL categorizes this as daily data since it is associated with a specific day. By default, GeoCDL checks if all requested datasets have data products matching the requested temporal resolution and returns an error if at least one does not (e.g. our example of requesting monthly data but NDVI only available as daily products). To change this default behavior, the `grain_method` parameter can be specified to tell GeoCDL what temporal resolutions to allow. To tell GeoCDL that we want it to return daily NDVI, we can specify either 'finer' or 'any' in this case since daily is the only option.
+
+```{r time}
+# Define time of interest and temporal resolution as monthly
+yrs <- '2008' #change to 2000:2010 when data available
+mnths <- '7:8'   #change to 4:9 when data available
+
+# Allow sparse daily NDVI to be returned by specifying that
+# finer than indicated temporal resolutions can be returned
+g_method <- 'finer' 
+
+```
+
+## Step 3: Select datasets and their variables
+
+The GeoCDL can be queried to return the currently available datasets and their metadata. We will be using the MODIS NDVI Data, Smoothed and Gap-filled, for the Conterminous US: 2000-2015 data product which is stored under the ID *MODIS_NDVI*.
+We can see from its metadata that this dataset has a ... CRS, different from our area of interest objects. The GeoCDL will accommodate the discrepancy. The metadata also indicates that there is just one variable: NDVI.
+
+```{r dsvars}
+# 1, Query the GeoCDL to list all datasets
+list_datasets()
+
+# 2. View a dataset's metadata
+view_metadata("MODIS_NDVI")
+
+# 3. Format datasets and variables
+dsvars <- tibble(dataset = c("PRISM","MODIS_NDVI"),
+                 variables = c("ppt","NDVI"))
+
+```
+
+```{r download}
+
+subset_files <- download_polygon_subset(dsvars, 
+                                        t_geom = guid_bounds,
+                                        years = yrs,
+                                        months = mnths,
+                                        grain_method = g_method,
+                                        resolution = spat_res,
+                                        ri_method = resample_method)
+subset_files
+
+```
+
+```{r visualize, fig.height = 6, fig.width = 7, fig.align = "center"}
+
+subset_stack <- subset_files[grepl("tif",subset_files)] %>%
+  stack() 
+
+subset_stack
+
+ndvi_df <- subset_stack %>%
+  as.data.frame(xy=TRUE) %>%
+  pivot_longer(contains('NDVI'),
+               names_to = c(NA,NA,NA,'date'),
+               names_sep = c('[_]'),
+               values_to = 'NDVI')
+
+ndvi_df %>%
+  ggplot() +
+  geom_raster(aes(x,y,fill=NDVI)) +
+  geom_sf(fill=NA,
+          color = 'red',
+          size = 0.25,
+          data=jer_bounds_sf) +
+  facet_wrap(~date,
+             ncol=4) +
+  scale_fill_gradientn(colors = rev(terrain.colors(8)),
+                       na.value = 'white') +
+  theme_few(base_size = 8) +
+  theme(legend.position = c(0.875,0.25)) +
+  scale_y_continuous(name = NULL, breaks = seq(32.4,33,0.2)) +
+  scale_x_continuous(name = NULL, breaks = seq(-106.9,-106.5,0.1)) 
+
+
+```
