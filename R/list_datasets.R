@@ -15,7 +15,7 @@ list_datasets <- function() {
   ds_query <- paste0(gcdl_url,'list_datasets')
 
   # Get response from REST API
-  ds_response <- url(ds_query)
+  ds_response <- httr::GET(ds_query)
 
   # Convert JSON response to data.frame
   jsonlite::fromJSON(ds_response)
