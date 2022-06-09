@@ -15,7 +15,9 @@
 upload_geometry <- function(geom) {
 
   # Check for connection
-  httr::http_error(gcdl_url)
+  if(httr::http_error(paste0(gcdl_url,'docs'))){
+    stop('Cannot connect to GeoCDL')
+  }
 
   # From Web API documentation:
   # A supported file type containing geometry data (either point or polygon).
@@ -37,13 +39,18 @@ upload_geometry <- function(geom) {
 
     # Check that it is point, multipoint, or single polygon
     geom_type <- class(geom$geometry)
-    if(geom_type %in% paste0("sfc_",c("POINT","MULTIPOINT","POLYGON")) |
-       (geom_type == "sfc_MULTIPOLYGON" & length(geom$geometry) == 1)){
-      upname_prefix <- tempfile()
-      tmp_shp <- paste0(upname_prefix,".shp")
+    if(any(geom_type %in% paste0("sfc_",c("POINT","MULTIPOINT","POLYGON"))) |
+       any(geom_type == "sfc_MULTIPOLYGON" & length(geom$geometry) == 1)){
+      tmp_dir <- tempdir()
+      upname_prefix <- tempfile(tmpdir='')
+      tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
       sf::st_write(geom,  tmp_shp)
-      upname <- paste0(upname_prefix,".zip")
-      zip(upname, list.files(upname_prefix), flags = '-9Xq')
+      upname <- paste0(tmp_dir, upname_prefix,".zip")
+      zip(upname,
+          list.files(tmp_dir,
+                     pattern=substr(upname_prefix,2,nchar(upname_prefix)),
+                     full.names = TRUE),
+          flags = '-9Xq')
     } else {
       stop('Unsupported upload geometry: only points and single polygon supported')
     }
@@ -54,11 +61,16 @@ upload_geometry <- function(geom) {
     geom_type <- class(geom)
     if(grepl("SpatialPoints",geom_type) |
        (grepl("SpatialPolygons",geom_type) & length(geom) == 1)){
-      upname_prefix <- tempfile()
-      tmp_shp <- paste0(upname_prefix,".shp")
-      sf::st_write(sf::st_as_sf(geom),  tmp_shp)
-      upname <- paste0(upname_prefix,".zip")
-      zip(upname, list.files(upname_prefix), flags = '-9Xq')
+      tmp_dir <- tempdir()
+      upname_prefix <- tempfile(tmpdir='')
+      tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
+      sf::st_write(geom,  tmp_shp)
+      upname <- paste0(tmp_dir, upname_prefix,".zip")
+      zip(upname,
+          list.files(tmp_dir,
+                     pattern=substr(upname_prefix,2,nchar(upname_prefix)),
+                     full.names = TRUE),
+          flags = '-9Xq')
     } else {
       stop('Unsupported upload geometry: only points and single polygon supported')
     }
@@ -100,7 +112,7 @@ upload_geometry <- function(geom) {
 
   # Check for error status code
   if(httr::http_error(guid_r)){
-    stop(paste('GeoCDL returned an error:', httr::http_status(guid_r)$message))
+    stop(paste('GeoCDL returned an error:', httr::http_status(guid_r)$message)) # or content()$detail?
   }
 
   # Extract geometry upload ID
