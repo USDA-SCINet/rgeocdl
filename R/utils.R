@@ -4,6 +4,20 @@ gcdl_url <- 'http://127.0.0.1:8000/'
 # Retrieve all metadata - do behind the scenes once in a session?
 
 # Compress files into a zipped folder
+zip_shapefiles <- function(geom){
+  tmp_dir <- tempdir()
+  upname_prefix <- tempfile(tmpdir='')
+  tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
+  sf::st_write(geom,  tmp_shp)
+  upname <- paste0(tmp_dir, upname_prefix,".zip")
+  zip(upname,
+      list.files(tmp_dir,
+                 pattern=substr(upname_prefix,2,nchar(upname_prefix)),
+                 full.names = TRUE),
+      flags = '-9Xq')
+
+  return(upname)
+}
 
 format_dsvars <- function(ds, vars){
 
@@ -61,7 +75,7 @@ format_geometry <- function(endpoint, geom){
   # Supported formats: GUID, two columns of coordinates, sf/sp object, or filename
   if(is.null(geom)){
     return(spatial_subset)
-  } else if(class(geom) == 'character'){
+  } else if(all(class(geom) == 'character')){
     # GUID or filename
     if(nchar(geom) == 36 & !grepl(".",geom, fixed=TRUE)){
       # GUID
@@ -71,10 +85,14 @@ format_geometry <- function(endpoint, geom){
       geom_guid <- upload_geometry(geom)
       spatial_subset <- paste0('&geom_guid=',geom_guid)
     }
-  } else if(grepl('data.frame|matrix',class(geom))){
+  } else if(any(grepl('sf',class(geom))) ){
+    # Get GUID
+    geom_guid <- upload_geometry(geom)
+    spatial_subset <- paste0('&geom_guid=',geom_guid)
+  } else if(all(grepl('frame|matrix',class(geom)))){
     # Format coordinates into string
     ep_prefix <- ifelse(endpoint == 'subset_polygon', '&clip=', '&points=')
-    geom_str <- paste(sapply(t_geom,function(x) paste0('(',paste(x,collapse = ","),")")),collapse = ",")
+    geom_str <- paste(sapply(geom,function(x) paste0('(',paste(x,collapse = ","),")")),collapse = ",")
     spatial_subset <- paste0(ep_prefix,geom_str)
   } else {
     stop('Unrecognized geometry format.')
@@ -201,22 +219,28 @@ submit_subset_query <- function(query_str){
   # Create temporary data folder
   temp_dir <- tempdir()
   tempf_prefix <- tempfile("subset",tmpdir = "")
-  subset_dir <- paste0(temp_dir,tempf_prefix,"/")
-  subset_zip <- paste0(temp_dir,tempf_prefix,'.zip')
 
   # Get response from REST API
-  subset_response <- httr::GET(query_str,
-                               httr::write_disk(subset_zip,
-                                                overwrite=TRUE))
+  out_files <- c()
+  for(q in 1:length(query_str)){
+    subset_dir <- paste0(temp_dir,tempf_prefix,"-",q,"/")
+    subset_zip <- paste0(temp_dir,tempf_prefix,"-",q,'.zip')
 
-  # Check for bad request / errors
-  if(httr::http_error(subset_response)){
-    stop(paste("GeoCDL error:",httr::content(subset_response)))
+    subset_response <- httr::GET(query_str[q],
+                                 httr::write_disk(subset_zip,
+                                                  overwrite=TRUE))
+    # Check for bad request / errors
+    if(httr::http_error(subset_response)){
+      stop(paste("GeoCDL error:",httr::content(subset_response)))
+    }
+
+    # Unzip results to temporary file
+    utils::unzip(subset_zip,
+                 exdir = subset_dir)
+
+    out_files <- c(out_files,
+                   list.files(subset_dir,full.names = TRUE))
   }
 
-  # Unzip results to temporary file
-  utils::unzip(subset_zip,
-               exdir = subset_dir)
-
-  return(list.files(subset_dir,full.names = TRUE))
+  return(out_files)
 }

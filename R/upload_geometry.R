@@ -39,21 +39,39 @@ upload_geometry <- function(geom) {
 
     # Check that it is point, multipoint, or single polygon
     geom_type <- class(geom$geometry)
-    if(any(geom_type %in% paste0("sfc_",c("POINT","MULTIPOINT","POLYGON"))) |
-       any(geom_type == "sfc_MULTIPOLYGON" & length(geom$geometry) == 1)){
-      tmp_dir <- tempdir()
-      upname_prefix <- tempfile(tmpdir='')
-      tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
-      sf::st_write(geom,  tmp_shp)
-      upname <- paste0(tmp_dir, upname_prefix,".zip")
-      zip(upname,
-          list.files(tmp_dir,
-                     pattern=substr(upname_prefix,2,nchar(upname_prefix)),
-                     full.names = TRUE),
-          flags = '-9Xq')
+    if(any(grepl("POINT", geom_type)) |
+       (any(grepl("POLYGON", geom_type)) & length(geom$geometry) == 1)){
+      upname <- zip_shapefiles(geom)
+    } else if(any(grepl("POLYGON", geom_type)) & length(geom$geometry) > 1){
+      # Compare convex hull area to sum of union area
+      ch_area <- geom %>%
+        st_union() %>%
+        st_convex_hull() %>%
+        st_area()
+      un_area <- geom %>%
+        st_union() %>%
+        st_area()
+      if(as.numeric(un_area/ch_area) > 0.8){
+        # Upload union of polygons
+        guid <- geom %>%
+          st_union() %>%
+          upload_geometry()
+        return(guid)
+      } else {
+        # Individually upload polygons
+        guid <- NULL
+        for(i in 1:length(geom$geometry)){
+          guid <- c(guid, upload_geometry(geom[i,]))
+        }
+        return(guid)
+      }
     } else {
-      stop('Unsupported upload geometry: only points and single polygon supported')
+      stop('Unsupported upload geometry: only points and polygons supported')
     }
+
+  } else if(any(class(geom) == "sfc" & length(geom$geometry) == 1)){
+
+    upname <- zip_shapefiles(geom)
 
   } else if(grepl("Spatial",class(geom))){
 
@@ -61,16 +79,7 @@ upload_geometry <- function(geom) {
     geom_type <- class(geom)
     if(grepl("SpatialPoints",geom_type) |
        (grepl("SpatialPolygons",geom_type) & length(geom) == 1)){
-      tmp_dir <- tempdir()
-      upname_prefix <- tempfile(tmpdir='')
-      tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
-      sf::st_write(geom,  tmp_shp)
-      upname <- paste0(tmp_dir, upname_prefix,".zip")
-      zip(upname,
-          list.files(tmp_dir,
-                     pattern=substr(upname_prefix,2,nchar(upname_prefix)),
-                     full.names = TRUE),
-          flags = '-9Xq')
+      upname <- zip_shapefiles(geom)
     } else {
       stop('Unsupported upload geometry: only points and single polygon supported')
     }
