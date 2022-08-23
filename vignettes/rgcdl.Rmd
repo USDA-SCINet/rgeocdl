@@ -36,9 +36,10 @@ library(rgeocdl)    # This package
 
 library(httr)       # Access geometry from AgCROS
 library(sf)         # Handle vector data
-library(raster)     # Handle raster data
-library(tidyverse)  # General data manipulation
-library(ggthemes)   # Visualization
+library(terra)      # Handle raster data
+library(tidyr)      # General data manipulation
+library(dplyr)
+library(ggplot2)    # visualizations
 ```
 
 ## Step 1: Specify area and dates of interest 
@@ -115,10 +116,13 @@ subset_files
 
 ```{r visualize, fig.height = 6, fig.width = 7, fig.align = "center"}
 
-subset_stack <- subset_files[grepl("tif",subset_files)] %>%
-  stack() 
+subset_tifs <- subset_files[grepl("tif",subset_files)]
+
+subset_stack <-  rast(subset_tifs) 
 
 subset_stack
+
+names(subset_stack) <- subset_tifs
 
 ndvi_df <- subset_stack %>%
   as.data.frame(xy=TRUE) %>%
@@ -138,7 +142,7 @@ ndvi_df %>%
              ncol=4) +
   scale_fill_gradientn(colors = rev(terrain.colors(8)),
                        na.value = 'white') +
-  theme_few(base_size = 8) +
+  theme_bw(base_size = 8) +
   theme(legend.position = c(0.875,0.25)) +
   scale_y_continuous(name = NULL, breaks = seq(32.4,33,0.2)) +
   scale_x_continuous(name = NULL, breaks = seq(-106.9,-106.5,0.1)) 
