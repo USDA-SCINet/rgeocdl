@@ -38,11 +38,11 @@ format_dsvars <- function(ds, vars){
   #  mutate(available = checkMetadata(ds = dataset, var = variable))
 
   dv_str <- dsvars %>%
-    group_by(dataset) %>%
-    summarise(dv = paste0(unique(dataset),':',paste(variable,collapse = ','))) %>%
-    ungroup() %>%
-    summarise(dv = paste0(dv,collapse = ";")) %>%
-    pull(dv) %>%
+    dplyr::group_by(dataset) %>%
+    dplyr::summarise(dv = paste0(unique(dataset),':',paste(variable,collapse = ','))) %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(dv = paste0(dv,collapse = ";")) %>%
+    dplyr::pull(dv) %>%
     utils::URLencode(reserved = TRUE)
 
   return(dv_str)

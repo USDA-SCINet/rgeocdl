@@ -116,12 +116,13 @@ upload_geometry <- function(geom) {
 
   # POST
   guid_r <- httr::POST(paste0(gcdl_url,'upload_geom'),
-                 body = list(geom_file = httr::upload_file(upname)),
+                       body = list(geom_file = httr::upload_file(upname)),
                  encode = "multipart")
 
   # Check for error status code
   if(httr::http_error(guid_r)){
-    stop(paste('GeoCDL returned an error:', httr::http_status(guid_r)$message)) # or content()$detail?
+    stop(paste('GeoCDL returned an error:',
+               httr::http_status(guid_r)$message)) # or content()$detail?
   }
 
   # Extract geometry upload ID
