@@ -21,11 +21,11 @@ view_metadata <- function(ds) {
   md_query <- paste0(gcdl_url,'ds_info?id=',ds)
 
   # Get response from REST API
-  md_response <- url(md_query)
+  md_response <- httr::GET(md_query)
 
   # Check for bad request / errors
 
   # Convert from JSON and return list
-  jsonlite::fromJSON(md_response)
+  httr::content(md_response)
 
 }

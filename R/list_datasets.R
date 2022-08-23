@@ -18,7 +18,7 @@ list_datasets <- function() {
   ds_response <- httr::GET(ds_query)
 
   # Convert JSON response to data.frame
-  jsonlite::fromJSON(ds_response)
+  httr::content(ds_response)
 
 }
 

@@ -8,7 +8,7 @@ Description: Provides user-friendly R functions to communicate with the Geospati
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: jsonlite, utils
+Imports: httr, utils
 RoxygenNote: 7.2.1
 Suggests: 
     knitr,
