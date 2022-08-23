@@ -5,3 +5,5 @@
 # R user files
 .Rproj.user/*
 inst/doc
+.Rproj.user
+.Rhistory
