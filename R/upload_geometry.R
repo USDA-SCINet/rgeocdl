@@ -69,7 +69,7 @@ upload_geometry <- function(geom) {
       stop('Unsupported upload geometry: only points and polygons supported')
     }
 
-  } else if(any(class(geom) == "sfc" & length(geom$geometry) == 1)){
+  } else if(any(class(geom) == "sfc" & length(geom) == 1)){
 
     upname <- zip_shapefiles(geom)
 

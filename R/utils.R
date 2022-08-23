@@ -77,7 +77,7 @@ format_geometry <- function(endpoint, geom){
     return(spatial_subset)
   } else if(all(class(geom) == 'character')){
     # GUID or filename
-    if(nchar(geom) == 36 & !grepl(".",geom, fixed=TRUE)){
+    if(all(nchar(geom) == 36) & !(grepl(".",geom[1], fixed=TRUE))){
       # GUID
       spatial_subset <- paste0('&geom_guid=',geom)
     } else {
