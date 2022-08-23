@@ -12,7 +12,7 @@
 #'   metadata by dataset ID
 #'
 #' @export
-upload_geometry <- function(geom) {
+upload_geometry <- function(geom, tmp_dir = tempdir()) {
 
   # Check for connection
   if(httr::http_error(paste0(gcdl_url,'docs'))){
@@ -41,7 +41,7 @@ upload_geometry <- function(geom) {
     geom_type <- class(geom$geometry)
     if(any(grepl("POINT", geom_type)) |
        (any(grepl("POLYGON", geom_type)) & length(geom$geometry) == 1)){
-      upname <- zip_shapefiles(geom)
+      upname <- zip_shapefiles(geom, tmp_dir)
     } else if(any(grepl("POLYGON", geom_type)) & length(geom$geometry) > 1){
       # Compare convex hull area to sum of union area
       ch_area <- geom %>%
@@ -71,7 +71,7 @@ upload_geometry <- function(geom) {
 
   } else if(any(class(geom) == "sfc" & length(geom) == 1)){
 
-    upname <- zip_shapefiles(geom)
+    upname <- zip_shapefiles(geom, tmp_dir)
 
   } else if(grepl("Spatial",class(geom))){
 
@@ -79,7 +79,7 @@ upload_geometry <- function(geom) {
     geom_type <- class(geom)
     if(grepl("SpatialPoints",geom_type) |
        (grepl("SpatialPolygons",geom_type) & length(geom) == 1)){
-      upname <- zip_shapefiles(geom)
+      upname <- zip_shapefiles(geom, tmp_dir)
     } else {
       stop('Unsupported upload geometry: only points and single polygon supported')
     }

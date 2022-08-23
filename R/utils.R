@@ -4,17 +4,22 @@ gcdl_url <- 'http://127.0.0.1:8000/'
 # Retrieve all metadata - do behind the scenes once in a session?
 
 # Compress files into a zipped folder
-zip_shapefiles <- function(geom){
-  tmp_dir <- tempdir()
-  upname_prefix <- tempfile(tmpdir='')
-  tmp_shp <- paste0(tmp_dir, upname_prefix, ".shp")
+zip_shapefiles <- function(geom, dsn){
+
+  #check if dsn exists
+
+  upname_prefix <- tempfile('shp',tmpdir='')
+  dir.create(paste0(dsn,'/',substr(upname_prefix,2,nchar(upname_prefix))))
+  tmp_shp <- paste0(dsn, upname_prefix, upname_prefix, ".shp")
   sf::st_write(geom,  tmp_shp)
-  upname <- paste0(tmp_dir, upname_prefix,".zip")
+  upname <- paste0(dsn, upname_prefix,".zip")
   zip(upname,
-      list.files(tmp_dir,
+      list.files(paste0(dsn, upname_prefix),
                  pattern=substr(upname_prefix,2,nchar(upname_prefix)),
                  full.names = TRUE),
       flags = '-9Xq')
+
+  # delete non-zip files here?
 
   return(upname)
 }
@@ -215,16 +220,15 @@ format_subset_query <- function(endpoint,
   return(query_str)
 }
 
-submit_subset_query <- function(query_str){
+submit_subset_query <- function(query_str, dsn){
   # Create temporary data folder
-  temp_dir <- tempdir()
   tempf_prefix <- tempfile("subset",tmpdir = "")
 
   # Get response from REST API
   out_files <- c()
   for(q in 1:length(query_str)){
-    subset_dir <- paste0(temp_dir,tempf_prefix,"-",q,"/")
-    subset_zip <- paste0(temp_dir,tempf_prefix,"-",q,'.zip')
+    subset_dir <- paste0(dsn,tempf_prefix,"-",q,"/")
+    subset_zip <- paste0(dsn,tempf_prefix,"-",q,'.zip')
 
     subset_response <- httr::GET(query_str[q],
                                  httr::write_disk(subset_zip,

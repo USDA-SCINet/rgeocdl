@@ -10,7 +10,8 @@ download_points_subset <- function(ds,
                                     out_format = NULL,
                                     grain_method = 'strict',
                                     validate_method = 'strict',
-                                    ri_method = 'nearest'){
+                                    ri_method = 'nearest',
+                                   dsn = getwd()){
 
   endpoint <- 'subset_points'
 
@@ -22,7 +23,7 @@ download_points_subset <- function(ds,
                                grain_method,validate_method,ri_method)
   print(q_str)
 
-  out_files <- submit_subset_query(q_str)
+  out_files <- submit_subset_query(q_str, dsn)
 
   return(out_files)
 }

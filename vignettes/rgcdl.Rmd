@@ -40,6 +40,7 @@ library(terra)      # Handle raster data
 library(tidyr)      # General data manipulation
 library(dplyr)
 library(ggplot2)    # visualizations
+library(stringr)
 ```
 
 ## Step 1: Specify area and dates of interest 
@@ -63,7 +64,7 @@ ggplot() +
   geom_sf(data=jer_bounds_sf)
 
 # Upload to GeoCDL and get Geometry Upload ID
-guid_bounds <- upload_geometry(jer_bounds_sf)
+guid_bounds <- upload_geometry(jer_bounds_sf, '~/tmp')
 
 # Spatial resolution - in meters since that is the unit of this CRS
 spat_res <- 1000 # meters
@@ -122,7 +123,7 @@ subset_stack <-  rast(subset_tifs)
 
 subset_stack
 
-names(subset_stack) <- subset_tifs
+names(subset_stack) <-  str_extract(subset_tifs, '[A-Za-z0-9._-]+$')
 
 ndvi_df <- subset_stack %>%
   as.data.frame(xy=TRUE) %>%

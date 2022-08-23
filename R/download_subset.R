@@ -60,7 +60,8 @@ download_subset <- function(ds,
                             out_format = NULL,
                             grain_method = 'strict',
                             validate_method = 'strict',
-                            ri_method = 'nearest') {
+                            ri_method = 'nearest',
+                            dsn = getwd()) {
 
   # Determine endpoint
   endpoint <- infer_endpoint(t_geom)
@@ -71,7 +72,8 @@ download_subset <- function(ds,
                                          t_crs, resolution, t_geom,
                                          out_format,
                                          grain_method, validate_method,
-                                         ri_method)
+                                         ri_method,
+                                         dsn)
   } else if(endpoint == 'subset_points') {
 
     # Check for parameter-endpoint inconsistencies
@@ -85,7 +87,8 @@ download_subset <- function(ds,
                                          t_crs, t_geom,
                                          out_format,
                                          grain_method, validate_method,
-                                         ri_method)
+                                         ri_method,
+                                        dsn)
   } else {
     stop('Unknown endpoint')
   }
