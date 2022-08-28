@@ -122,7 +122,8 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
   # Check for error status code
   if(httr::http_error(guid_r)){
     stop(paste('GeoCDL returned an error:',
-               httr::http_status(guid_r)$message)) # or content()$detail?
+               httr::http_status(guid_r)$message,
+               httr::content(guid_r)))
   }
 
   # Extract geometry upload ID
