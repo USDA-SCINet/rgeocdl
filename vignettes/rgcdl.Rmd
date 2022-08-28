@@ -2,7 +2,7 @@
 title: "R package for USDA-ARS SCINet GeoCDL"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{my-vignette}
+  %\VignetteIndexEntry{R package for USDA-ARS SCINet GeoCDL}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -34,7 +34,7 @@ This vignette covers the pilot features implemented in the GeoCDL web API v0.1.0
 ```{r libraries, message=FALSE, warning=FALSE}
 library(rgeocdl)    # This package
 
-library(httr)       # Access geometry from AgCROS
+library(httr)       # Access geometry from online
 library(sf)         # Handle vector data
 library(terra)      # Handle raster data
 library(tidyr)      # General data manipulation
@@ -103,26 +103,25 @@ dsvars <- tibble(dataset = c("PRISM","MODIS_NDVI"),
 ```
 
 ```{r download}
-
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
                                         years = yrs,
-                                        months = mnths,
+                                        months = mnths ,
                                         grain_method = g_method,
                                         resolution = spat_res,
-                                        ri_method = resample_method)
+                                        ri_method = resample_method,
+                                        dsn = '/tmp')
 subset_files
 
 ```
 
 ```{r visualize, fig.height = 6, fig.width = 7, fig.align = "center"}
 
-subset_tifs <- subset_files[grepl("tif",subset_files)]
+subset_tifs <- subset_files[grepl("tif",subset_files) & grepl("NDVI",subset_files)]
 
 subset_stack <-  rast(subset_tifs) 
 
 subset_stack
-
 names(subset_stack) <-  str_extract(subset_tifs, '[A-Za-z0-9._-]+$')
 
 ndvi_df <- subset_stack %>%
@@ -150,3 +149,5 @@ ndvi_df %>%
 
 
 ```
+
+
