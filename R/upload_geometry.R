@@ -4,12 +4,28 @@
 #' REST API and returns a geometry upload ID to use
 #' in subset requests.
 #'
-#' @param geom A sp or sf object or a filename. ELABORATE
+#' @param geom A `sp` or `sf` object representing points or polygons, or a
+#'     filename. For point data, the following file formats are supported: CSV
+#'     (comma-separated values), shapefiles, and GeoJSON. For polygon data, the
+#'     following file formats are supported: shapefiles and GeoJSON. CSV files
+#'     must contain a column named "x", "long", or "longitude" (not case
+#'     sensitive) and a column named "y", "lat", or "latitude" (not case
+#'     sensitive). Shapefiles must be uploaded in a single ZIP archive.
+#'     Supported GeoJSON types for point data uploads are "Point", "MultiPoint",
+#'     "GeometryCollection", "Feature", and "FeatureCollection". Supported
+#'     GeoJSON types for polygon data uploads are "Polygon", "MultiPolygon",
+#'     "GeometryCollection", "Feature", and "FeatureCollection". "Holes" in
+#'     polygons will be ignored. For polygon data, GeoJSON objects and
+#'     shapefiles with more than one polygon definition will be either
+#'     uploaded as their union or uploaded separately based on if their (area
+#'     of union)/(area of convex hull) > 0.8, respectively.
+#' @param tmp_dir The directory in which to save temporary zipped shapefile
+#'    folders representing `geom` that are uploaded to GeoCDL.
 #'
 #' @return A geometry upload ID string
 #'
-#' @seealso \code{\link{view_metadata}} to list the dataset
-#'   metadata by dataset ID
+#' @seealso \code{\link{download_subset}} to use this geometry upload ID for
+#'    data downloads.
 #'
 #' @export
 upload_geometry <- function(geom, tmp_dir = tempdir()) {
@@ -45,16 +61,16 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
     } else if(any(grepl("POLYGON", geom_type)) & length(geom$geometry) > 1){
       # Compare convex hull area to sum of union area
       ch_area <- geom %>%
-        st_union() %>%
-        st_convex_hull() %>%
-        st_area()
+        sf::st_union() %>%
+        sf::st_convex_hull() %>%
+        sf::st_area()
       un_area <- geom %>%
-        st_union() %>%
-        st_area()
+        sf::st_union() %>%
+        sf::st_area()
       if(as.numeric(un_area/ch_area) > 0.8){
         # Upload union of polygons
         guid <- geom %>%
-          st_union() %>%
+          sf::st_union() %>%
           upload_geometry()
         return(guid)
       } else {
@@ -101,7 +117,7 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
         stop('Unsupported upload geometry: can not find all shapefile files')
       }
       upname <- tempfile(fileext = '.zip')
-      zip(upname, shp_files, flags = '-9Xq')
+      utils::zip(upname, shp_files, flags = '-9Xq')
 
     } else if(grepl(".csv|.geojson|.zip",geom)){
 

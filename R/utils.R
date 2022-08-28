@@ -3,6 +3,9 @@ gcdl_url <- 'http://127.0.0.1:8000/'
 
 # Retrieve all metadata - do behind the scenes once in a session?
 
+# Set global variables
+utils::globalVariables(c('outfiles','dataset','variable','dv','%>%'))
+
 # Compress files into a zipped folder
 zip_shapefiles <- function(geom, dsn){
 
@@ -13,7 +16,7 @@ zip_shapefiles <- function(geom, dsn){
   tmp_shp <- paste0(dsn, upname_prefix, upname_prefix, ".shp")
   sf::st_write(geom,  tmp_shp)
   upname <- paste0(dsn, upname_prefix,".zip")
-  zip(upname,
+  utils::zip(upname,
       list.files(paste0(dsn, upname_prefix),
                  pattern=substr(upname_prefix,2,nchar(upname_prefix)),
                  full.names = TRUE),
@@ -27,7 +30,7 @@ zip_shapefiles <- function(geom, dsn){
 format_dsvars <- function(ds, vars){
 
   # DATASET_ID:VARNAME[,VARNAME...][;DATASET_ID:VARNAME[,VARNAME...]...]
-  dsvars <- tibble()
+  dsvars <- dplyr::tibble()
   ## Check if ds is a data.frame, tibble, or matrix
   if(any(grepl('data.frame|matrix',class(dsvars))) & is.null(vars)){
     # Assume first column is dataset and second is variable

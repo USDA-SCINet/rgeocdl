@@ -4,10 +4,27 @@
 \alias{upload_geometry}
 \title{Upload a user geometry}
 \usage{
-upload_geometry(geom)
+upload_geometry(geom, tmp_dir = tempdir())
 }
 \arguments{
-\item{geom}{A sp or sf object or a filename. ELABORATE}
+\item{geom}{A `sp` or `sf` object representing points or polygons, or a
+filename. For point data, the following file formats are supported: CSV
+(comma-separated values), shapefiles, and GeoJSON. For polygon data, the
+following file formats are supported: shapefiles and GeoJSON. CSV files
+must contain a column named "x", "long", or "longitude" (not case
+sensitive) and a column named "y", "lat", or "latitude" (not case
+sensitive). Shapefiles must be uploaded in a single ZIP archive.
+Supported GeoJSON types for point data uploads are "Point", "MultiPoint",
+"GeometryCollection", "Feature", and "FeatureCollection". Supported
+GeoJSON types for polygon data uploads are "Polygon", "MultiPolygon",
+"GeometryCollection", "Feature", and "FeatureCollection". "Holes" in
+polygons will be ignored. For polygon data, GeoJSON objects and
+shapefiles with more than one polygon definition will be either
+uploaded as their union or uploaded separately based on if their (area
+of union)/(area of convex hull) > 0.8, respectively.}
+
+\item{tmp_dir}{The directory in which to save temporary zipped shapefile
+folders representing `geom` that are uploaded to GeoCDL.}
 }
 \value{
 A geometry upload ID string
@@ -18,6 +35,6 @@ REST API and returns a geometry upload ID to use
 in subset requests.
 }
 \seealso{
-\code{\link{view_metadata}} to list the dataset
-  metadata by dataset ID
+\code{\link{download_subset}} to use this geometry upload ID for
+   data downloads.
 }

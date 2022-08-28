@@ -4,11 +4,17 @@ Title: Accessing USDA-ARS SCINet GeoCDL with R
 Version: 0.1.0
 Author: Heather Savoy
 Maintainer: Heather Savoy <heather.savoy@usda.gov>
-Description: Provides user-friendly R functions to communicate with the Geospatial Common Data Library (GeoCDL), a community effort by the USDA-ARS SCINet Geospatial Working Group (https://www.scinet.usda.gov/).
+Description: Provides user-friendly R functions to communicate with the 
+  Geospatial Common Data Library (GeoCDL), a community effort by the USDA-ARS 
+  SCINet Geospatial Working Group (https://www.scinet.usda.gov/).
 License: GPL-3 + file LICENSE
 Encoding: UTF-8
 LazyData: true
-Imports: httr, utils
+Imports: 
+  httr, 
+  utils,
+  dplyr,
+  sf
 RoxygenNote: 7.2.1
 Suggests: 
     knitr,
