@@ -1,5 +1,5 @@
 # Current REST API url
-gcdl_url <- 'http://127.0.0.1:8000/'
+gcdl_url <- '10.1.1.80:8000/'
 
 # Retrieve all metadata - do behind the scenes once in a session?
 
@@ -235,8 +235,11 @@ submit_subset_query <- function(query_str, dsn){
                                                   overwrite=TRUE))
     # Check for bad request / errors
     if(httr::http_error(subset_response)){
-      stop(paste("GeoCDL error:",httr::content(subset_response)))
+      stop(paste('GeoCDL returned an error:',
+                 httr::http_status(subset_response)$message,
+                 httr::content(subset_response)))
     }
+
 
     # Unzip results to temporary file
     utils::unzip(subset_zip,
