@@ -4,6 +4,22 @@
 #' geospatial data matching the dataset variables and
 #' spatio-temporal filters.
 #'
+#' # Temporal subsets
+#'
+#' For specifying the dates of your data request, you can either use `dates` for
+#' simple date ranges or a combination of `years`, `months`, and `days` for
+#' more complicated date patterns. For non-temporal datasets, these parameters
+#' can be omitted and will be ignored if specified. To specify if you want
+#' annual, monthly, or daily data, you specify your temporal subsets with only
+#' year information (e.g. `dates=YYYY` or `years=YYYY`), or year and month
+#' information (e.g. `dates=YYYY-MM` or `years=YYYY, months=MM`), or year,
+#' (month), and day information (e.g. `dates=YYYY-MM-DD` or
+#' `years=YYYY, months=MM, days=DD`). If not all datasets you request have the
+#' same temporal grain, e.g. you request monthly data but one dataset only has
+#' daily data or only has annual data, you can specify `grain_method` to choose
+#' an alternative temporal grain. Use `validate_method` to specify how to handle
+#' datasets whose temporal range does not match your requested temporal subset.
+#'
 #' @inheritParams download_subset
 #' @param t_geom The point geometry of interest specified as a geometry upload
 #'  ID (see \code{\link{upload_geometry}}), `sf` or `sp` object, or a data.frame
