@@ -5,7 +5,7 @@
 #'
 #' @param ds The GeoCDL dataset ID
 #'
-#' @return The metadata for the dataset as a list
+#' @return NULL, the metadata for the dataset as a printed message
 #'
 #' @seealso \code{\link{list_datasets}} to list available datasets and their IDs
 #'
@@ -42,14 +42,22 @@ view_metadata <- function(ds) {
                           " (", md_parsed$vars, ")"),
                    collapse = '\n\t'), '\n',
              'Date ranges: \n\t',
-             paste(paste0('Annual: ', paste(md_parsed$date_ranges$year,
-                                            collapse = ':'), '\n\t',
-                          'Monthly: ', paste(md_parsed$date_ranges$month,
-                                             collapse = ':'), '\n\t',
-                          'Daily: ', paste(md_parsed$date_ranges$day,
-                                           collapse = ':')
-                          ),
-                   collapse = '\n\t'), '\n',
+             paste(paste0('Annual: ',
+                          ifelse(is.null(md_parsed$date_ranges$year[[1]]),
+                                 '(no data for this temporal grain)',
+                                 paste(md_parsed$date_ranges$year,
+                                       collapse = ':'))),
+                          paste0('Monthly: ',
+                                 ifelse(is.null(md_parsed$date_ranges$month[[1]]),
+                                 '(no data for this temporal grain)',
+                                 paste(md_parsed$date_ranges$month,
+                                       collapse = ':'))),
+                          paste0('Daily: ',
+                                 ifelse(is.null(md_parsed$date_ranges$day[[1]]),
+                                 '(no data for this temporal grain)',
+                                 paste(md_parsed$date_ranges$day,
+                                       collapse = ':'))),
+                          sep = '\n\t'), '\n',
              'CRS: \n\t',
              paste0('Name: ', md_parsed$crs$name, '\n\t',
                     'EPSG: ', md_parsed$crs$epsg, '\n\t',
