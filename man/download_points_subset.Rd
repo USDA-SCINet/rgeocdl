@@ -34,8 +34,8 @@ Leading 0s in "MM" and "DD" are optional (e.g., both "2020-01-01" and
 by commas. For example: "2000-2010", "2000-1,2005-1,2010-1:2010-6",
 "2000-01-01:2000-04-31". Dates can be omitted for non-temporal data
 requests. For more complicated, recurring date patterns, use the "years",
-"months", and "days" parameters. See the Details section below for more
-information about temporal subsetting.}
+"months", and "days" parameters instead of `dates`. See the Details section
+below for more information about temporal subsetting.}
 
 \item{years}{Years to subset data. Can be expressed as ranges and sequences,
 such as "2004-2005,2009" or "2000-2010+2", which is interpreted as every
