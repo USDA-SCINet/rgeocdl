@@ -8,6 +8,8 @@
 #' @seealso \code{\link{view_metadata}} to list the dataset
 #'   metadata by dataset ID
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 list_datasets <- function() {
 
