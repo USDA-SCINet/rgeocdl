@@ -1,11 +1,5 @@
 # Current REST API url
-gcdl_url <- NULL
-temporary_address_f <- '/project/geospatialworkshop/gdcl_address.csv'
-if(file.exists(temporary_address_f)){
-  gcdl_url <- read.csv(temporary_address_f)$address
-} else {
-  gcdl_url <- '10.1.1.80:8000/'
-}
+gcdl_url <- '10.1.1.80:8000/'
 
 # Retrieve all metadata - do behind the scenes once in a session?
 
