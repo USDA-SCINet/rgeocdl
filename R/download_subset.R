@@ -109,7 +109,11 @@
 #'  used if `t_crs` and/or `resolution` are provided. If point request: the
 #'  interpolation method used for extracting point values. Available methods:
 #'  "nearest" or "linear". Default is "nearest".
-#' @param dsn The directory to download and extract the return zipped results.
+#' @param dsn The detination directory to download and extract the return zipped
+#'  results. If NULL, the working directory is used.
+#' @param req_name The request name. Used to name the folder containing the
+#'  downloaded data. If NULL, will be 'subset' plus a string of random
+#'  characters.
 #'
 #' @return A vector of paths to the downloaded data.
 #'
@@ -135,7 +139,8 @@ download_subset <- function(dsvars,
                             grain_method = 'strict',
                             validate_method = 'strict',
                             ri_method = 'nearest',
-                            dsn = getwd()) {
+                            dsn = NULL,
+                            req_name = NULL) {
 
   # Determine endpoint
   endpoint <- infer_endpoint(t_geom)
@@ -147,7 +152,7 @@ download_subset <- function(dsvars,
                                          out_format,
                                          grain_method, validate_method,
                                          ri_method,
-                                         dsn)
+                                         dsn, req_name)
   } else if(endpoint == 'subset_points') {
 
     # Check for parameter-endpoint inconsistencies
@@ -157,12 +162,12 @@ download_subset <- function(dsvars,
 
 
     out_files <- download_points_subset(dsvars,
-                                         dates, years, months, days,
-                                         t_crs, t_geom,
-                                         out_format,
-                                         grain_method, validate_method,
-                                         ri_method,
-                                        dsn)
+                                        dates, years, months, days,
+                                        t_crs, t_geom,
+                                        out_format,
+                                        grain_method, validate_method,
+                                        ri_method,
+                                        dsn, req_name)
   } else {
     stop('Unknown endpoint')
   }

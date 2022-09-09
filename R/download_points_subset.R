@@ -39,17 +39,18 @@
 #'
 #' @export
 download_points_subset <- function(dsvars,
-                                    dates = NULL,
-                                    years = NULL,
-                                    months = NULL,
-                                    days = NULL,
-                                    t_crs = NULL,
-                                    t_geom = NULL,
-                                    out_format = 'csv',
-                                    grain_method = 'strict',
-                                    validate_method = 'strict',
-                                    ri_method = 'nearest',
-                                   dsn = getwd()){
+                                   dates = NULL,
+                                   years = NULL,
+                                   months = NULL,
+                                   days = NULL,
+                                   t_crs = NULL,
+                                   t_geom = NULL,
+                                   out_format = 'csv',
+                                   grain_method = 'strict',
+                                   validate_method = 'strict',
+                                   ri_method = 'nearest',
+                                   dsn = NULL,
+                                   req_name = NULL){
 
   endpoint <- 'subset_points'
 
@@ -61,7 +62,7 @@ download_points_subset <- function(dsvars,
                                grain_method,validate_method,ri_method)
   print(q_str)
 
-  out_files <- submit_subset_query(q_str, dsn)
+  out_files <- submit_subset_query(q_str, dsn, req_name)
 
   return(out_files)
 }

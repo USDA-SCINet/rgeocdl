@@ -66,7 +66,8 @@ download_polygon_subset <- function(dsvars,
                                     grain_method = 'strict',
                                     validate_method = 'strict',
                                     ri_method = 'nearest',
-                                    dsn = getwd()){
+                                    dsn = NULL,
+                                    req_name = NULL){
 
   endpoint <- 'subset_polygon'
 
@@ -78,7 +79,7 @@ download_polygon_subset <- function(dsvars,
                       grain_method,validate_method,ri_method)
   print(q_str)
 
-  out_files <- submit_subset_query(q_str, dsn)
+  out_files <- submit_subset_query(q_str, dsn, req_name)
 
   return(out_files)
 }

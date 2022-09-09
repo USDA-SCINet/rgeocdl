@@ -10,7 +10,7 @@ if(file.exists(temporary_address_f)){
 # Retrieve all metadata - do behind the scenes once in a session?
 
 # Set global variables
-utils::globalVariables(c('outfiles','dataset','variable','dv','%>%'))
+utils::globalVariables(c('outfiles','dataset','variable','dv'))
 
 # Compress files into a zipped folder
 zip_shapefiles <- function(geom, dsn){
@@ -229,34 +229,47 @@ format_subset_query <- function(endpoint,
   return(query_str)
 }
 
-submit_subset_query <- function(query_str, dsn){
-  # Create temporary data folder
-  tempf_prefix <- tempfile("subset",tmpdir = "")
+submit_subset_query <- function(query_str, dsn = getwd(), req_name){
 
-  # Get response from REST API
-  out_files <- c()
-  for(q in 1:length(query_str)){
-    subset_dir <- paste0(dsn,tempf_prefix,"-",q,"/")
-    subset_zip <- paste0(dsn,tempf_prefix,"-",q,'.zip')
-
-    subset_response <- httr::GET(query_str[q],
-                                 httr::write_disk(subset_zip,
-                                                  overwrite=TRUE))
-    # Check for bad request / errors
-    if(httr::http_error(subset_response)){
-      stop(paste('GeoCDL returned an error:',
-                 httr::http_status(subset_response)$message,
-                 httr::content(subset_response)))
-    }
-
-
-    # Unzip results to temporary file
-    utils::unzip(subset_zip,
-                 exdir = subset_dir)
-
-    out_files <- c(out_files,
-                   list.files(subset_dir,full.names = TRUE))
+  # Check destination
+  if(!dir.exists(dsn)){
+    stop('Destination folder does not exist.')
   }
 
-  return(out_files)
+  # Create folder for downloaded data
+  dl_prefix <- ifelse(is.null(req_name),
+                      tempfile("subset",tmpdir = ""),
+                      paste0("/",req_name))
+
+  # Get response from GeoCDL API
+  num_queries <- length(query_str)
+  if(num_queries == 0){
+    stop('Missing query string')
+  } else {
+    out_files <- c()
+    for(q in 1:length(query_str)){
+      subset_dir <- paste0(dsn,dl_prefix,"-",q)
+      subset_zip <- paste0(dsn,dl_prefix,"-",q,'.zip')
+
+      subset_response <- httr::GET(query_str[q],
+                                   httr::write_disk(subset_zip,
+                                                    overwrite=TRUE))
+      # Check for bad request / errors
+      if(httr::http_error(subset_response)){
+        stop(paste('GeoCDL returned an error:',
+                   httr::http_status(subset_response)$message,
+                   httr::content(subset_response)))
+      }
+
+
+      # Unzip results to temporary file
+      utils::unzip(subset_zip,
+                   exdir = subset_dir)
+
+      out_files <- c(out_files,
+                     list.files(subset_dir,full.names = TRUE))
+    }
+    return(out_files)
+  }
+
 }

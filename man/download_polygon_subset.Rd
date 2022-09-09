@@ -17,7 +17,8 @@ download_polygon_subset(
   grain_method = "strict",
   validate_method = "strict",
   ri_method = "nearest",
-  dsn = getwd()
+  dsn = NULL,
+  req_name = NULL
 )
 }
 \arguments{
@@ -105,7 +106,12 @@ methods: "nearest", "bilinear", "cubic", "cubic-spline", "lanczos",
 "average", or "mode". Default is "nearest".  Only used if `t_crs`
 and/or `resolution` are provided.}
 
-\item{dsn}{The directory to download and extract the return zipped results.}
+\item{dsn}{The detination directory to download and extract the return zipped
+results. If NULL, the working directory is used.}
+
+\item{req_name}{The request name. Used to name the folder containing the
+downloaded data. If NULL, will be 'subset' plus a string of random
+characters.}
 }
 \value{
 A vector of paths to the downloaded data.

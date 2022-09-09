@@ -17,7 +17,8 @@ download_subset(
   grain_method = "strict",
   validate_method = "strict",
   ri_method = "nearest",
-  dsn = getwd()
+  dsn = NULL,
+  req_name = NULL
 )
 }
 \arguments{
@@ -108,7 +109,12 @@ used if `t_crs` and/or `resolution` are provided. If point request: the
 interpolation method used for extracting point values. Available methods:
 "nearest" or "linear". Default is "nearest".}
 
-\item{dsn}{The directory to download and extract the return zipped results.}
+\item{dsn}{The detination directory to download and extract the return zipped
+results. If NULL, the working directory is used.}
+
+\item{req_name}{The request name. Used to name the folder containing the
+downloaded data. If NULL, will be 'subset' plus a string of random
+characters.}
 }
 \value{
 A vector of paths to the downloaded data.
