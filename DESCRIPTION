@@ -15,9 +15,8 @@ Imports:
   jsonlite,
   utils,
   dplyr,
-  sf,
-  jsonlite
-RoxygenNote: 7.2.1
+  sf
+RoxygenNote: 7.2.0
 Suggests: 
     knitr,
     rmarkdown

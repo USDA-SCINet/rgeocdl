@@ -10,7 +10,7 @@ view_metadata(ds)
 \item{ds}{The GeoCDL dataset ID}
 }
 \value{
-The metadata for the dataset as a list
+NULL, the metadata for the dataset as a printed message
 }
 \description{
 This function queries the GeoCDL REST API and returns

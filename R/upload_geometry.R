@@ -56,7 +56,7 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
   if(any(class(geom) %in% c("sf","sfc"))){
 
     # Check that it is point, multipoint, or single polygon
-    geom_type <- class(st_geometry(geom))
+    geom_type <- class(sf::st_geometry(geom))
     if(any(grepl("POINT", geom_type)) |
        (any(grepl("POLYGON", geom_type)) & length(geom$geometry) == 1)){
       upname <- zip_shapefiles(geom, tmp_dir)
