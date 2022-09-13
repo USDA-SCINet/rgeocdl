@@ -109,8 +109,8 @@
 #'  used if `t_crs` and/or `resolution` are provided. If point request: the
 #'  interpolation method used for extracting point values. Available methods:
 #'  "nearest" or "linear". Default is "nearest".
-#' @param dsn The detination directory to download and extract the return zipped
-#'  results. If NULL, the working directory is used.
+#' @param dsn The destination directory to download and extract the return zipped
+#'  results. If not specified, the working directory is used.
 #' @param req_name The request name. Used to name the folder containing the
 #'  downloaded data. If NULL, will be 'subset' plus a string of random
 #'  characters.
@@ -139,7 +139,7 @@ download_subset <- function(dsvars,
                             grain_method = 'strict',
                             validate_method = 'strict',
                             ri_method = 'nearest',
-                            dsn = NULL,
+                            dsn = '.',
                             req_name = NULL) {
 
   # Determine endpoint
