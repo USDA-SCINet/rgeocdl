@@ -53,10 +53,10 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
   # Determine geom format.
   # If a spatial object, write to temporary zipped shapefile
   # If a filename, confirm it exists and is supported format.
-  if(any(class(geom) == "sf")){
+  if(any(class(geom) %in% c("sf","sfc"))){
 
     # Check that it is point, multipoint, or single polygon
-    geom_type <- class(geom$geometry)
+    geom_type <- class(st_geometry(geom))
     if(any(grepl("POINT", geom_type)) |
        (any(grepl("POLYGON", geom_type)) & length(geom$geometry) == 1)){
       upname <- zip_shapefiles(geom, tmp_dir)
@@ -87,16 +87,12 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
       stop('Unsupported upload geometry: only points and polygons supported')
     }
 
-  } else if(any(class(geom) == "sfc" & length(geom) == 1)){
-
-    upname <- zip_shapefiles(geom, tmp_dir)
-
-  } else if(grepl("Spatial",class(geom))){
+  } else if(any(grepl("Spatial",class(geom)))){
 
     # Check that it is point, multipoint, or single polygon
     geom_type <- class(geom)
-    if(grepl("SpatialPoints",geom_type) |
-       (grepl("SpatialPolygons",geom_type) & length(geom) == 1)){
+    if(any(grepl("SpatialPoints",geom_type)) |
+       (any(grepl("SpatialPolygons",geom_type)) & length(geom) == 1)){
       upname <- zip_shapefiles(geom, tmp_dir)
     } else {
       stop('Unsupported upload geometry: only points and single polygon supported')
