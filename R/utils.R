@@ -223,7 +223,7 @@ format_subset_query <- function(endpoint,
   return(query_str)
 }
 
-submit_subset_query <- function(query_str, dsn = getwd(), req_name){
+submit_subset_query <- function(query_str, dsn = '.', req_name){
 
   # Check destination
   if(!dir.exists(dsn)){
