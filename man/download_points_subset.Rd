@@ -16,7 +16,8 @@ download_points_subset(
   grain_method = "strict",
   validate_method = "strict",
   ri_method = "nearest",
-  dsn = getwd()
+  dsn = NULL,
+  req_name = NULL
 )
 }
 \arguments{
@@ -34,19 +35,22 @@ Leading 0s in "MM" and "DD" are optional (e.g., both "2020-01-01" and
 by commas. For example: "2000:2010", "2000-1,2005-1,2010-1:2010-6",
 "2000-01-01:2000-04-31". Dates can be omitted for non-temporal data
 requests. For more complicated, recurring date patterns, use the "years",
-"months", and "days" parameters.}
+"months", and "days" parameters instead of `dates`. See the Details section
+below for more information about temporal subsetting.}
 
 \item{years}{Years to subset data. Can be expressed as ranges and sequences,
 such as "2004:2005,2009" or "2000:2010+2", which is interpreted as every
 other year starting with 2000. Ranges are inclusive of their endpoints
 unless the endpoint does not correspond with the step size increment. If
-"dates" is also provided, "years" (and "months" and "days") will be ignored.}
+"dates" is also provided, "years" (and "months" and "days") will be ignored.
+See the Details section below for more information about temporal subsetting.}
 
 \item{months}{Months to include for each year of the data request. Only
 valid if "years" is also specified. Accepts values 1-12. Can be expressed
 as ranges and sequences, such as "1:3,5,9:12" or "1:12+2", which is
 interpreted as every other month. Ranges are inclusive of their endpoints
-unless the endpoint does not correspond with the step size increment.}
+unless the endpoint does not correspond with the step size increment.
+See the Details section below for more information about temporal subsetting.}
 
 \item{days}{Only valid if "years" or "years" and "months" are also specified.
 If only "years" is specified, "days" is interpreted as the days of each
@@ -58,7 +62,8 @@ sequences, such as "1:100,200:230,266:366", "1:N", or "10:N+10", which is
 interpreted as every 10th day of the year or month. Ranges are inclusive
 of their endpoints unless the endpoint does not correspond with the step
 size increment. Required if "years" or "years" and "months" are specified
-and daily data are desired.}
+and daily data are desired. See the Details section below for more
+information about temporal subsetting.}
 
 \item{t_crs}{The target coordinate reference system (CRS) for the returned
 data. Can be specified as a PROJ string, CRS WKT string, authority string
@@ -74,14 +79,15 @@ be that of `t_crs`, if specified, or that of the first requested dataset.}
 
 \item{grain_method}{How to handle scenario of requested date grains not
 matching date grains of each requested dataset. If "strict" (default),
- an error will be returned. If "skip", the dataset will be skipped.
- If "coarser", then only coarser grains will be returned. If "finer",
- then only finer grains will be returned. If "any", then any available
- grain will be returned, with coarser having higher priority over finer.
- Non-temporal datasets are always returned.}
+an error will be returned. If "skip", the dataset will be skipped.
+If "coarser", then only coarser grains will be returned. If "finer",
+then only finer grains will be returned. If "any", then any available
+grain will be returned, with coarser having higher priority over finer.
+Non-temporal datasets are always returned. See the Details section below
+for more information about temporal subsetting.}
 
-\item{validate_method}{How to handle requested dates outside of requested dataset
-available data range. If "strict" (default),
+\item{validate_method}{How to handle requested dates outside of requested
+dataset available data range. If "strict" (default),
 an error will be returned. If "overlap", the requested dates will be
 'truncated to the date range available in all requested datasets. If
 "all", then the requested dates will be truncated to the available date
@@ -91,7 +97,12 @@ range per dataset. Non-temporal datasets are always returned.}
 values. Available methods: "nearest" or "linear". Default is
 "nearest".}
 
-\item{dsn}{The directory to download and extract the return zipped results.}
+\item{dsn}{The detination directory to download and extract the return zipped
+results. If NULL, the working directory is used.}
+
+\item{req_name}{The request name. Used to name the folder containing the
+downloaded data. If NULL, will be 'subset' plus a string of random
+characters.}
 }
 \value{
 A vector of paths to the downloaded data.
@@ -100,6 +111,23 @@ A vector of paths to the downloaded data.
 This function queries the GeoCDL REST API and returns
 geospatial data matching the dataset variables and
 spatio-temporal filters.
+}
+\details{
+# Temporal subsets
+
+For specifying the dates of your data request, you can either use `dates` for
+simple date ranges or a combination of `years`, `months`, and `days` for
+more complicated date patterns. For non-temporal datasets, these parameters
+can be omitted and will be ignored if specified. To specify if you want
+annual, monthly, or daily data, you specify your temporal subsets with only
+year information (e.g. `dates=YYYY` or `years=YYYY`), or year and month
+information (e.g. `dates=YYYY-MM` or `years=YYYY, months=MM`), or year,
+(month), and day information (e.g. `dates=YYYY-MM-DD` or
+`years=YYYY, months=MM, days=DD`). If not all datasets you request have the
+same temporal grain, e.g. you request monthly data but one dataset only has
+daily data or only has annual data, you can specify `grain_method` to choose
+an alternative temporal grain. Use `validate_method` to specify how to handle
+datasets whose temporal range does not match your requested temporal subset.
 }
 \seealso{
 \code{\link{list_datasets}} to list available datasets and their IDs.

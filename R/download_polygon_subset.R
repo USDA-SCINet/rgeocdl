@@ -4,6 +4,35 @@
 #' geospatial data matching the dataset variables and
 #' spatio-temporal filters.
 #'
+#' # Temporal subsets
+#'
+#' For specifying the dates of your data request, you can either use `dates` for
+#' simple date ranges or a combination of `years`, `months`, and `days` for
+#' more complicated date patterns. For non-temporal datasets, these parameters
+#' can be omitted and will be ignored if specified. To specify if you want
+#' annual, monthly, or daily data, you specify your temporal subsets with only
+#' year information (e.g. `dates=YYYY` or `years=YYYY`), or year and month
+#' information (e.g. `dates=YYYY-MM` or `years=YYYY, months=MM`), or year,
+#' (month), and day information (e.g. `dates=YYYY-MM-DD` or
+#' `years=YYYY, months=MM, days=DD`). If not all datasets you request have the
+#' same temporal grain, e.g. you request monthly data but one dataset only has
+#' daily data or only has annual data, you can specify `grain_method` to choose
+#' an alternative temporal grain. Use `validate_method` to specify how to handle
+#' datasets whose temporal range does not match your requested temporal subset.
+#'
+#' # Harmonization
+#'
+#' The GeoCDL can return a harmonized 'datacube' of raster layers for polygon
+#' subset requests with multiple datasets if `t_geom` and `resolution` are
+#' specified. If `t_geom`, `t_crs`, and `resolution` are specified, then each
+#' layer is spatially subsetted and reprojected to `resolution` and `t_crs`. If
+#' `t_geom` and `resolution` are specified without `t_crs`, then each
+#' layer is spatially subsetted and reprojected to `resolution` and the CRS of
+#' `t_geom` if available or the CRS of the first requested dataset if not.
+#' `resolution` is always assumed to be in units of the target CRS which is
+#' the first available from either, `t_crs`, the CRS of `t_geom`, or the CRS of
+#' the first requested dataset.
+#'
 #' @inheritParams download_subset
 #' @param t_geom The polygon geometry of interest specified as a geometry
 #'   upload ID (see \code{\link{upload_geometry}}), `sf` or `sp` object, or a
@@ -13,9 +42,10 @@
 #'   be that of `t_crs`, if specified, otherwise that of the first requested
 #'   dataset.
 #' @param out_format The output format for the subset: 'geotiff' or 'netcdf'.
-#' @param ri_method The interpolation method used for extracting point
-#'     values. Available methods: "nearest" or "linear". Default is
-#'     "nearest".
+#' @param ri_method The resampling method used for reprojection. Available
+#'   methods: "nearest", "bilinear", "cubic", "cubic-spline", "lanczos",
+#'   "average", or "mode". Default is "nearest".  Only used if `t_crs`
+#'   and/or `resolution` are provided.
 #'
 #' @return A vector of paths to the downloaded data.
 #'
@@ -36,7 +66,8 @@ download_polygon_subset <- function(dsvars,
                                     grain_method = 'strict',
                                     validate_method = 'strict',
                                     ri_method = 'nearest',
-                                    dsn = getwd()){
+                                    dsn = NULL,
+                                    req_name = NULL){
 
   endpoint <- 'subset_polygon'
 
@@ -48,7 +79,7 @@ download_polygon_subset <- function(dsvars,
                       grain_method,validate_method,ri_method)
   print(q_str)
 
-  out_files <- submit_subset_query(q_str, dsn)
+  out_files <- submit_subset_query(q_str, dsn, req_name)
 
   return(out_files)
 }

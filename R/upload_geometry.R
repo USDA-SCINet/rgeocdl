@@ -27,6 +27,8 @@
 #' @seealso \code{\link{download_subset}} to use this geometry upload ID for
 #'    data downloads.
 #'
+#' @importFrom dplyr %>%
+#'
 #' @export
 upload_geometry <- function(geom, tmp_dir = tempdir()) {
 

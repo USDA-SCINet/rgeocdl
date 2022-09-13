@@ -110,7 +110,8 @@ subset_files <- download_polygon_subset(dsvars,
                                         grain_method = g_method,
                                         resolution = spat_res,
                                         ri_method = resample_method,
-                                        dsn = '/tmp')
+                                        dsn = '~/tmp',
+                                        req_name = 'my_request')
 subset_files
 
 ```

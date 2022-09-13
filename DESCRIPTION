@@ -15,7 +15,8 @@ Imports:
   jsonlite,
   utils,
   dplyr,
-  sf
+  sf,
+  jsonlite
 RoxygenNote: 7.2.1
 Suggests: 
     knitr,
