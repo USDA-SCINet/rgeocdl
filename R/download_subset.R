@@ -15,27 +15,27 @@
 #'  a colon, as in "YYYY:YYYY", "YYYY-MM:YYYY-MM", or "YYYY-MM-DD:YYYY-MM-DD".
 #'  Leading 0s in "MM" and "DD" are optional (e.g., both "2020-01-01" and
 #'  "2020-1-1" are valid). Multiple dates and/or date ranges should be separated
-#'  by commas. For example: "2000-2010", "2000-1,2005-1,2010-1:2010-6",
+#'  by commas. For example: "2000:2010", "2000-1,2005-1,2010-1:2010-6",
 #'  "2000-01-01:2000-04-31". Dates can be omitted for non-temporal data
 #'  requests. For more complicated, recurring date patterns, use the "years",
 #'  "months", and "days" parameters.
 #' @param years Years to subset data. Can be expressed as ranges and sequences,
-#'  such as "2004-2005,2009" or "2000-2010+2", which is interpreted as every
+#'  such as "2004:2005,2009" or "2000:2010+2", which is interpreted as every
 #'  other year starting with 2000. Ranges are inclusive of their endpoints
 #'  unless the endpoint does not correspond with the step size increment. If
 #'  "dates" is also provided, "years" (and "months" and "days") will be ignored.
 #' @param months Months to include for each year of the data request. Only
 #'  valid if "years" is also specified. Accepts values 1-12. Can be expressed
-#'  as ranges and sequences, such as "1-3,5,9-12" or "1-12+2", which is
+#'  as ranges and sequences, such as "1:3,5,9:12" or "1:12+2", which is
 #'  interpreted as every other month. Ranges are inclusive of their endpoints
 #'  unless the endpoint does not correspond with the step size increment.
 #' @param days Only valid if "years" or "years" and "months" are also specified.
 #'  If only "years" is specified, "days" is interpreted as the days of each
 #'  year (starting from 1) to include in the request. If "years" and "months"
 #'  are both specified, "days" is interpreted as the days of each month
-#'  (starting from 1) to incude in the request. The special value "N"
+#'  (starting from 1) to include in the request. The special value "N"
 #'  represents the last day of a month or year. Can be expressed as ranges and
-#'  sequences, such as "1-100,200-230,266-366", "1-N", or "10-N+10", which is
+#'  sequences, such as "1:100,200:230,266:366", "1:N", or "10:N+10", which is
 #'  interpreted as every 10th day of the year or month. Ranges are inclusive
 #'  of their endpoints unless the endpoint does not correspond with the step
 #'  size increment. Required if "years" or "years" and "months" are specified
