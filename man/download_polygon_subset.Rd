@@ -97,7 +97,7 @@ for more information about temporal subsetting.}
 \item{validate_method}{How to handle requested dates outside of requested
 dataset available data range. If "strict" (default),
 an error will be returned. If "overlap", the requested dates will be
-'truncated to the date range available in all requested datasets. If
+truncated to the date range available in all requested datasets. If
 "all", then the requested dates will be truncated to the available date
 range per dataset. Non-temporal datasets are always returned.}
 
