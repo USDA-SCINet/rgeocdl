@@ -100,7 +100,7 @@ format_geometry <- function(endpoint, geom){
   } else if(all(grepl('frame|matrix',class(geom)))){
     # Format coordinates into string
     ep_prefix <- ifelse(endpoint == 'subset_polygon', '&clip=', '&points=')
-    geom_str <- paste(sapply(geom,function(x) paste0('(',paste(x,collapse = ","),")")),collapse = ",")
+    geom_str <- paste(apply(geom,1,function(x) paste0('(',paste(x,collapse = ","),")")),collapse = ",")
     spatial_subset <- paste0(ep_prefix,geom_str)
   } else {
     stop('Unrecognized geometry format.')
