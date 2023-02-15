@@ -58,9 +58,9 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
     # Check that it is point, multipoint, or single polygon
     geom_type <- class(sf::st_geometry(geom))
     if(any(grepl("POINT", geom_type)) |
-       (any(grepl("POLYGON", geom_type)) & length(geom$geometry) == 1)){
+       (any(grepl("POLYGON", geom_type)) & length(sf::st_geometry(geom)) == 1)){
       upname <- zip_shapefiles(geom, tmp_dir)
-    } else if(any(grepl("POLYGON", geom_type)) & length(geom$geometry) > 1){
+    } else if(any(grepl("POLYGON", geom_type)) & length(sf::st_geometry(geom)) > 1){
       # Compare convex hull area to sum of union area
       ch_area <- geom %>%
         sf::st_union() %>%
@@ -78,7 +78,7 @@ upload_geometry <- function(geom, tmp_dir = tempdir()) {
       } else {
         # Individually upload polygons
         guid <- NULL
-        for(i in 1:length(geom$geometry)){
+        for(i in 1:length(sf::st_geometry(geom))){
           guid <- c(guid, upload_geometry(geom[i,]))
         }
         return(guid)
