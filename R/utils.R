@@ -248,13 +248,13 @@ submit_subset_query <- function(query_str, dsn, req_name){
       subset_response <- httr::GET(query_str[q],
                                    httr::write_disk(subset_zip,
                                                     overwrite=TRUE))
+
       # Check for bad request / errors
       if(httr::http_error(subset_response)){
         stop(paste('GeoCDL returned an error:',
-                   httr::http_status(subset_response)$message,
-                   httr::content(subset_response)))
+                   httr::http_status(subset_response)$message, '\n',
+                   httr::content(subset_response)$detail))
       }
-
 
       # Unzip results to temporary file
       utils::unzip(subset_zip,

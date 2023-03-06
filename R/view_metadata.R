@@ -23,10 +23,15 @@ view_metadata <- function(ds) {
   # Get response from REST API
   md_response <- httr::GET(md_query)
 
-  # Check for bad request / errors
-
   # Convert from JSON and return list
   md_parsed <- httr::content(md_response)
+
+  # Check for bad request / errors
+  if(httr::http_error(md_response)){
+    stop(paste('GeoCDL returned an error:',
+               httr::http_status(md_response)$message, '\n',
+               md_parsed$detail))
+  }
 
   # Format list into text
   cat(paste0('Name: ', md_parsed$name, '\n',
