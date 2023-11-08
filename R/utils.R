@@ -32,7 +32,7 @@ format_dsvars <- function(ds, vars){
   # DATASET_ID:VARNAME[,VARNAME...][;DATASET_ID:VARNAME[,VARNAME...]...]
   dsvars <- dplyr::tibble()
   ## Check if ds is a data.frame, tibble, or matrix
-  if(any(grepl('data.frame|matrix',class(dsvars))) & is.null(vars)){
+  if(any(grepl('data.frame|matrix',class(ds))) & is.null(vars)){
     # Assume first column is dataset and second is variable
     dsvars <- ds
     names(dsvars)[1:2] <- c('dataset','variable')
