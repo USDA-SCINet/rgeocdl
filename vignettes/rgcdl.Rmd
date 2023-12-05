@@ -34,7 +34,9 @@ object can pass along that object to this package's functions and the package wi
 do the necessary formatting of the data to make it compatible with GeoCDL. Other 
 interfaces, a python package for example, will also be released in the near future. 
 
-The example we will cover is ....
+The workflows we will cover are uploading a shapefile of an LTAR site, harmonizing 
+with common gridded environmental data, downloading and visualizing the resulting 
+maps. We also show how to extract point level information from a gridded layer.
 
 This tutorial assumes you are running this Rmarkdown file in RStudio Server on 
 Ceres. The easiest way to do that is with 
@@ -45,6 +47,44 @@ If you have any questions, problems, or requests related to the R interface, ple
 use the issue tracker on our GitHub repository: 
 [https://github.com/USDA-SCINet/rgeocdl](https://github.com/USDA-SCINet/rgeocdl). 
  
+*Language:* `R`
+
+*Primary Libraries/Packages:*
+
+| Name | Description | Link |
+|:--|:--|:--|
+| rgeocdl | R interface for SCINet GeoCDL API | https://github.com/USDA-SCINet/rgeocdl |
+| sf | Simple Features for R | https://r-spatial.github.io/sf/ |
+
+## Nomenclature
+
+* *GeoCDL:* Geospatial Common Data Library, a collection of commonly used raster 
+  datasets accessible from an API running on SCINet's Ceres cluster
+* *Raster:* Data defined on a grid of geospatial coordinates
+* *CRS:* Coordinate Reference System, also known as a spatial reference system. A
+  system for defining geospatial coordinates. 
+  
+
+## Data Details
+
+* Data: MODIS NDVI Data, Smoothed and Gap-filled, for the Conterminous US: 2000-2015
+* Link: [https://doi.org/10.3334/ORNLDAAC/1299](https://doi.org/10.3334/ORNLDAAC/1299)
+* Other Details: This data set provides Moderate Resolution Imaging Spectroradiometer 
+  (MODIS) normalized difference vegetation index (NDVI) data, smoothed and gap-filled, 
+  for the conterminous US for the period 2000-01-01 through 2015-12-31. The data 
+  were generated using the NASA Stennis Time Series Product Tool (TSPT) to generate 
+  NDVI data streams from the Terra satellite (MODIS MOD13Q1 product) and Aqua 
+  satellite (MODIS MYD13Q1 product) instruments. TSPT produces NDVI data that 
+  are less affected by clouds and bad pixels.
+
+* Data: PRISM
+* Link: [https://prism.oregonstate.edu/](https://prism.oregonstate.edu/)
+* Other Details: The PRISM Climate Group gathers climate observations from a 
+  wide range of monitoring networks, applies sophisticated quality control 
+  measures, and develops spatial climate datasets to reveal short- and long-term 
+  climate patterns. The resulting datasets incorporate a variety of modeling 
+  techniques and are available at multiple spatial/temporal resolutions, covering 
+  the period from 1895 to the present.
 
 
 ## Tutorial Steps
@@ -55,6 +95,7 @@ use the issue tracker on our GitHub repository:
   * Spatial coverage, spatial resolution, and CRS
 * Download requested data - Send request to server and download results
 * Visualize results - View the downloaded data and metadata
+* Request variations - Multiple data request examples
 
 
 ## Step 0: Import Libraries/Packages
@@ -89,7 +130,7 @@ library if you were to load an R module in a shell.
 library(rgeocdl)    
 
 # Additional packages in tutorial
-library(httr)       # Access geometry from AgCROS
+library(httr)       # Make HTTP requests to access data
 library(sf)         # Handle vector data
 library(terra)      # Handle raster data
 library(tidyr)      # General data manipulation
@@ -100,10 +141,11 @@ library(ggplot2)    # Visualizations
 ## Step 1: Specify area and dates of interest 
 
 We will specify our area of interest as the USDA-ARS Jornada Experimental Range 
-in southern New Mexico. This site is a part of the LTAR network, which has site
-boundaries available on [AgCROS](). .... We will download the boundary for the 
-'JER' site and transform its coordinate reference system (CRS) to UTM 13N, a 
-typical CRS for the site. 
+in southern New Mexico. This site is a part of the Long-Term Agricultural Research 
+(LTAR) network, which has site boundaries available on 
+[AgCROS](https://agcros-usdaars.opendata.arcgis.com/pages/ltar-dm-home). 
+We will download the boundary for the 'JER' site and transform its coordinate 
+reference system (CRS) to UTM 13N, a typical CRS for the site. 
 
 We will showcase returning gridded data overlapping this site. 
 
@@ -147,14 +189,14 @@ spatial resolution and a resampling method. By indicating a target spatial
 resolution along with our geometry, we are telling GeoCDL that we want a 
 spatially-harmonized 'datacube' that has each requested data layer with the
 same CRS, spatial resolution, and spatial extent. The target CRS in this case is
-that of our geometry, but you may specify an alternative one if you wish. 
+that of our geometry, but you may specify an alternative one if you wish. The 
+default resampling method is to take the nearest pixel. 
 
-[TO DO: CHECK ON CURRENT RESAMPLING METHOD DEFAULTS]
 
 ```{r}
 # Spatial resolution - in meters since that is the unit of the target CRS
 spat_res <- 1000 # meters
-resample_method <- 'bilinear'
+resample_method = 'bilinear'
 ```
 
 
@@ -165,8 +207,8 @@ separately as below. By specifying years and months, we are letting GeoCDL know
 that we are interested in monthly data. If we only specify years, then it will
 infer we want annual data and if we also specifies days, then it will infer we
 want daily data. However, users can also request a combination of temporal grains
-by specifying a 'grain method'. In this example, we are also interested in both annual and daily
-data available within July-August 2008, so we will indicate the 'any' grain 
+by specifying a 'grain method'. In this example, we are also interested in both annual 
+and daily data available within July-August 2008, so we will indicate the 'any' grain 
 method.
 
 ```{r time}
@@ -176,7 +218,7 @@ mnths <- '7:8'
 
 # Allow sparse daily NDVI to be returned by specifying that
 # any than indicated temporal resolutions can be returned
-g_method <- 'any' 
+g_method <- 'finer' 
 
 ```
 
@@ -188,25 +230,28 @@ Conterminous US: 2000-2015 data product.
 We will request monthly PRISM precipitation as well. 
 
 The `list_datasets` function will return a dataframe listing the currently
-available datasets from GeoCDL. TO learn more about a particular dataset, use its
-dataset ID with the `view_metadata` function to learn more about the dataset. 
-For example, the *MODIS_NDVI* has one variable, *NDVI*, and has daily data 
-available from 2000-01-01 to 2012-12-31. 
+available datasets from GeoCDL. 
+
+```{r}
+# Query the GeoCDL to list all datasets
+list_datasets()
+```
+
+To learn more about a particular dataset, use its dataset ID with the `view_metadata` function. For example, the *MODIS_NDVI* has one variable, *NDVI*, and has daily data available from 2000-01-01 to 2012-12-31. This *MODIS_NDVI* product has layers for every 8 days over this time period, and so we designate this product as a daily product. 
+
+```{r}
+# View a dataset's metadata
+view_metadata("MODIS_NDVI")
+```
 
 To specify which data layers to include in the data download, you can construct
-a dataframe or tibble listing the dataset ID with variable IDs. 
+a dataframe or tibble listing the IDs of the datasets you wish to use, with the
+IDs of the variables you want from each dataset.
 
-```{r dsvars}
-# 1, Query the GeoCDL to list all datasets
-list_datasets()
-
-# 2. View a dataset's metadata
-view_metadata("MODIS_NDVI")
-
-# 3. Format datasets and variables
+```{r}
+# Format datasets and variables
 dsvars <- tibble(dataset = c("PRISM","MODIS_NDVI"),
                  variables = c("ppt","NDVI"))
-
 ```
 
 ## Step 3: Download the data
@@ -222,7 +267,7 @@ layer files are GeoTIFFs with the dataset, variable, and date indicated in the
 filename. 
 
 ```{r download}
-
+resample_method = 'nearest'
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
                                         years = yrs,
@@ -236,9 +281,9 @@ subset_files
 
 ## Step 4: Visualize the results
 
-Our use of `rgeocdl` is complete, but we can visualize the data that we downloaded.
-We can see that in our site, NDVI increased over July-August 2008 but by different
-degrees within the site. 
+Our use of `rgeocdl` for this example is complete, but we can visualize the data 
+that we downloaded. We can see that in our site, NDVI increased over July-August 
+2008 but by different degrees within the site. 
 
 ```{r visualize, fig.height = 6, fig.width = 7, fig.align = "center"}
 
@@ -271,7 +316,9 @@ ndvi_df %>%
   theme_bw(base_size = 8) +
   theme(legend.position = c(0.875,0.25)) +
   scale_y_continuous(name = NULL, breaks = seq(32.4,33,0.2)) +
-  scale_x_continuous(name = NULL, breaks = seq(-106.9,-106.5,0.1)) 
+  scale_x_continuous(name = NULL, breaks = seq(-106.9,-106.5,0.1)) +
+  ggtitle("NDVI Values of Jornada Experimental Range, New Mexico") +
+  theme(plot.title = element_text(hjust = 0.5))
 
 
 ```
@@ -279,12 +326,9 @@ ndvi_df %>%
 
 ## Part 2: Point extraction
 
-For the sake of simplicity, we will create some random points from our previous
-area of interest to represent some points of interest to showcase point subsets
-from GeoCDL. Here, we are providing our `sf` object directly to 
-`download_points_subset` instead of uploading it ahead of time. `rgeocdl` is still
-doing the upload, but behind the scenes. We will extract the elevation of these
-points and request the results in a shapefile (the default is a CSV). 
+Next, we will use the rgeocdl package to extract elevation data from specific spatial points, instead of over a polygon. For the sake of simplicity, we will create some 
+random points from our previous area of interest to showcase point subsets from GeoCDL. Here, we are providing our `sf` object directly to `download_points_subset` instead of uploading it ahead of time. `rgeocdl` is still doing the upload, but behind the scenes. 
+We will extract the elevation of these points and request the results in a shapefile (the default is a CSV). 
 ```{r}
 # Generate N random points within our area of interest
 N <- 50
