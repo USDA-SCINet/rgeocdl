@@ -267,7 +267,7 @@ layer files are GeoTIFFs with the dataset, variable, and date indicated in the
 filename. 
 
 ```{r download}
-resample_method = 'nearest'
+
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
                                         years = yrs,
