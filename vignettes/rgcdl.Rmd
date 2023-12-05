@@ -196,7 +196,7 @@ default resampling method is to take the nearest pixel.
 ```{r}
 # Spatial resolution - in meters since that is the unit of the target CRS
 spat_res <- 1000 # meters
-resample_method = 'bilinear'
+resample_method <- 'bilinear'
 ```
 
 
