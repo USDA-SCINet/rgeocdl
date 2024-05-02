@@ -200,27 +200,23 @@ resample_method <- 'bilinear'
 ```
 
 
-The GeoCDL accepts multiple temporal range formats so that many different user 
-needs can be met. In this example, we are interested in July-August 2008. One way
-to specify that is with the years and months together as `'2008-07:2008-08'` or
-separately as below. By specifying years and months, we are letting GeoCDL know
-that we are interested in monthly data. If we only specify years, then it will
-infer we want annual data and if we also specifies days, then it will infer we
-want daily data. However, users can also request a combination of temporal grains
-by specifying a 'grain method'. In this example, we are also interested in both annual 
-and daily data available within July-August 2008, so we will indicate the 'any' grain 
-method.
-
+Next, we specify our temporal data. The GeoCDL accepts multiple temporal range 
+formats so that many different user needs can be met. In this example, we are 
+interested in July-August 2008. One way to specify that is with the years and 
+months together as dates='2008-07:2008-08' or separately as below. By specifying 
+years and months, we are letting GeoCDL know that we are interested in monthly 
+data. If we only specify years, then it will infer we want annual data and if we 
+also specifies days, then it will infer we want daily data. If the inferred date 
+grain is supported by a dataset, then we use that grain for that dataset. If 
+that date grain is not supported by a dataset, then GCDL uses the "grain method" 
+variable, if set, to determine what other grains the user is willing accept. For 
+example, here we specify "finer" to indicate that if monthly data is not 
+available, we are also willing to accept daily data. Other options for grain 
+methods include "strict", "skip", "any", and "coarser".
 ```{r}
 # Define time of interest and temporal resolution as monthly
 yrs <- '2008:2010,2012'
 mnths <- '7:8,11'   
-
-```
-
-Each dataset that has a temporal dimension to the data allows for at least one date "grain", such as yearly, monthly, or daily data. The GCDL infers from our request what temporal grain we are requesting. Here, since we specify year and month data, the GCDL infers that we would like monthly data. If that date grain is supported by a dataset, then we use that grain for that dataset. If that date grain is not supported by a dataset, then GCDL uses the grain method to determine what other grains we can accept. For example, here we specify "finer" to indicate that if monthly data is not available, we are also willing to accept daily data. Other options for grain methods include "strict", "skip" (if grain is not available, don't return data), "any", and "coarser". 
-
-```{r}
 g_method <- 'finer' 
 ```
 
