@@ -215,8 +215,8 @@ available, we are also willing to accept daily data. Other options for grain
 methods include "strict", "skip", "any", and "coarser".
 ```{r}
 # Define time of interest and temporal resolution as monthly
-yrs <- '2008:2010,2012'
-mnths <- '7:8,11'   
+yrs <- '2008'
+mnths <- '7:8'   
 g_method <- 'finer' 
 ```
 
@@ -248,8 +248,8 @@ IDs of the variables you want from each dataset.
 
 ```{r}
 # Format datasets and variables
-dsvars <- tibble(dataset = c("PRISM", "MODIS_NDVI"),
-                 variables = c("ppt", "NDVI"))
+dsvars <- tibble(dataset = c("PRISM","MODIS_NDVI"),
+                 variables = c("ppt","NDVI"))
 ```
 
 ## Step 3: Download the data
@@ -267,9 +267,8 @@ filename.
 ```{r download}
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
-                                        years = "2000",
-                                        months = "1",
-                                        days = "1",
+                                        years = yrs,
+                                        months = mnths,
                                         grain_method = g_method,
                                         resolution = spat_res,
                                         ri_method = resample_method)
