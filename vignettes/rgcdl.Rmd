@@ -239,7 +239,7 @@ To learn more about a particular dataset, use its dataset ID with the `view_meta
 
 ```{r}
 # View a dataset's metadata
-view_metadata("PRISM")
+view_metadata("MODIS_NDVI")
 ```
 
 To specify which data layers to include in the data download, you can construct
@@ -248,8 +248,8 @@ IDs of the variables you want from each dataset.
 
 ```{r}
 # Format datasets and variables
-dsvars <- tibble(dataset = c("PRISM"),
-                 variables = c("ppt"))
+dsvars <- tibble(dataset = c("PRISM", "MODIS_NDVI"),
+                 variables = c("ppt", "NDVI"))
 ```
 
 ## Step 3: Download the data
