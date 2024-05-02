@@ -211,15 +211,17 @@ by specifying a 'grain method'. In this example, we are also interested in both 
 and daily data available within July-August 2008, so we will indicate the 'any' grain 
 method.
 
-```{r time}
+```{r}
 # Define time of interest and temporal resolution as monthly
-yrs <- '2008'
-mnths <- '7:8'   
+yrs <- '2008:2010,2012'
+mnths <- '7:8,11'   
 
-# Allow sparse daily NDVI to be returned by specifying that
-# any than indicated temporal resolutions can be returned
+```
+
+Each dataset that has a temporal dimension to the data allows for at least one date "grain", such as yearly, monthly, or daily data. The GCDL infers from our request what temporal grain we are requesting. Here, since we specify year and month data, the GCDL infers that we would like monthly data. If that date grain is supported by a dataset, then we use that grain for that dataset. If that date grain is not supported by a dataset, then GCDL uses the grain method to determine what other grains we can accept. For example, here we specify "finer" to indicate that if monthly data is not available, we are also willing to accept daily data. Other options for grain methods include "strict", "skip" (if grain is not available, don't return data), "any", and "coarser". 
+
+```{r}
 g_method <- 'finer' 
-
 ```
 
 ## Step 2: Select datasets and their variables
@@ -241,7 +243,7 @@ To learn more about a particular dataset, use its dataset ID with the `view_meta
 
 ```{r}
 # View a dataset's metadata
-view_metadata("MODIS_NDVI")
+view_metadata("PRISM")
 ```
 
 To specify which data layers to include in the data download, you can construct
@@ -250,8 +252,8 @@ IDs of the variables you want from each dataset.
 
 ```{r}
 # Format datasets and variables
-dsvars <- tibble(dataset = c("PRISM","MODIS_NDVI"),
-                 variables = c("ppt","NDVI"))
+dsvars <- tibble(dataset = c("PRISM"),
+                 variables = c("ppt"))
 ```
 
 ## Step 3: Download the data
@@ -267,11 +269,11 @@ layer files are GeoTIFFs with the dataset, variable, and date indicated in the
 filename. 
 
 ```{r download}
-
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
-                                        years = yrs,
-                                        months = mnths,
+                                        years = "2000",
+                                        months = "1",
+                                        days = "1",
                                         grain_method = g_method,
                                         resolution = spat_res,
                                         ri_method = resample_method)
