@@ -200,26 +200,24 @@ resample_method <- 'bilinear'
 ```
 
 
-The GeoCDL accepts multiple temporal range formats so that many different user 
-needs can be met. In this example, we are interested in July-August 2008. One way
-to specify that is with the years and months together as `'2008-07:2008-08'` or
-separately as below. By specifying years and months, we are letting GeoCDL know
-that we are interested in monthly data. If we only specify years, then it will
-infer we want annual data and if we also specifies days, then it will infer we
-want daily data. However, users can also request a combination of temporal grains
-by specifying a 'grain method'. In this example, we are also interested in both annual 
-and daily data available within July-August 2008, so we will indicate the 'any' grain 
-method.
-
-```{r time}
+Next, we specify our temporal data. The GeoCDL accepts multiple temporal range 
+formats so that many different user needs can be met. In this example, we are 
+interested in July-August 2008. One way to specify that is with the years and 
+months together as dates='2008-07:2008-08' or separately as below. By specifying 
+years and months, we are letting GeoCDL know that we are interested in monthly 
+data. If we only specify years, then it will infer we want annual data and if we 
+also specifies days, then it will infer we want daily data. If the inferred date 
+grain is supported by a dataset, then we use that grain for that dataset. If 
+that date grain is not supported by a dataset, then GCDL uses the "grain method" 
+variable, if set, to determine what other grains the user is willing accept. For 
+example, here we specify "finer" to indicate that if monthly data is not 
+available, we are also willing to accept daily data. Other options for grain 
+methods include "strict", "skip", "any", and "coarser".
+```{r}
 # Define time of interest and temporal resolution as monthly
 yrs <- '2008'
 mnths <- '7:8'   
-
-# Allow sparse daily NDVI to be returned by specifying that
-# any than indicated temporal resolutions can be returned
 g_method <- 'finer' 
-
 ```
 
 ## Step 2: Select datasets and their variables
@@ -267,7 +265,6 @@ layer files are GeoTIFFs with the dataset, variable, and date indicated in the
 filename. 
 
 ```{r download}
-
 subset_files <- download_polygon_subset(dsvars, 
                                         t_geom = guid_bounds,
                                         years = yrs,
